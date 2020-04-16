@@ -4,26 +4,30 @@ import numpy as np
 from matplotlib import pyplot as plt
 import datetime as dt
 from scipy.optimize import curve_fit
+import matplotlib.patches as mpl_patches
 
 # UK cases from '2020-02-27'
 N_uk = 65382556
 
-days_uk = np.arange('2020-02-27', '2020-04-07', dtype='datetime64[D]')
+days_uk = np.arange('2020-02-27', '2020-04-16', dtype='datetime64[D]')
 
 total_cases_per_day_uk = np.array([3, 4, 3, 13, 3, 12, 36, 29, 48, 45, 69, 43, 62,
                                    77, 130, 208, 342, 251, 152, 407, 676, 643, 714,
                                    1035, 665, 967, 1427, 1452, 2129, 2885, 2546,
                                    2433, 2619, 3009, 4324, 4244, 4450, 4735,
-                                   5903, 3802])
+                                   5903, 3802, 3634, 5491, 4344, 8681, 5233, 5288,
+                                   4342, 5252, 4603])
 
 deaths_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 1, 2, 2, 1,
                               10, 14, 20, 16, 33, 40, 33, 56, 48, 54, 87, 43,
                               115, 181, 260, 209, 180, 381, 563, 569, 684, 708,
-                              621, 439])
+                              621, 439, 786, 938, 881, 980, 917, 737, 717, 778,
+                              761])
 
 recovery_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 2, 32, 13, 0, 0, 0, 28, 0, 42, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                                0, 0, 2, 32, 13, 0, 0, 0, 28, 0, 42, 209, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0,
+                                0, 0, 0, 0])
 
 cases_per_day_uk = total_cases_per_day_uk - \
     deaths_per_day_uk - recovery_per_day_uk
@@ -31,29 +35,45 @@ cases_per_day_uk = total_cases_per_day_uk - \
 # IT cases from '2020-02-20'
 N_it = 60480000
 
-days_it = np.arange('2020-02-20', '2020-04-07', dtype='datetime64[D]')
+days_it = np.arange('2020-02-20', '2020-04-16', dtype='datetime64[D]')
 
 total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 573, 335,
                                    466, 587, 769, 778, 1247, 1492, 1797, 979, 2313,
                                    2651, 2547, 3497, 3590, 3233, 3526, 4207, 5322,
                                    5986, 6557, 5560, 4789, 5249, 5210, 6203, 5909,
                                    5974, 5217, 4050, 4053, 4782, 4668, 4585, 4805,
-                                   4316, 3599])
+                                   4316, 3599, 3039, 3836, 4204, 3951, 4694, 4092,
+                                   3153, 2972, 2667])
 
 deaths_per_day_it = np.array([0, 0, 0, 0, 4, 4, 0, 5, 4, 8, 12, 11, 27, 28, 41,
                               49, 36, 133, 97, 168, 196, 189, 250, 175, 368, 349,
                               345, 475, 427, 627, 793, 651, 601, 743, 683, 712,
-                              919, 889, 756, 812, 837, 727, 760, 766, 681, 525, 
-                              636])
+                              919, 889, 756, 812, 837, 727, 760, 766, 681, 525,
+                              636, 604, 542, 610, 570, 619, 431, 566, 602, 578])
 
 recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 138, 109, 66, 33, 102, 280, 41, 213, 181, 527,
                                 369, 414, 192, 1084, 415, 689, 943, 952, 408,
                                 894, 1036, 999, 589, 1434, 646, 1590, 1109,
-                                1118, 1431, 1480, 1238, 819, 1022])
+                                1118, 1431, 1480, 1238, 819, 1022, 1555,
+                                2099, 1979, 1985, 2079, 1677, 1224, 1695,
+                                962])
 
 cases_per_day_it = total_cases_per_day_it - \
     deaths_per_day_it - recovery_per_day_it
+
+
+def moving_central_filter(a: np.ndarray) -> np.ndarray:
+
+    n = len(a)
+    hat_a = np.zeros(n)
+
+    hat_a[0] = a[0]
+    for k in range(1, n - 1):
+        hat_a[k] = (a[k + 1] + a[k] + a[k - 1]) / 3.0
+    hat_a[n - 1] = a[n - 1]
+
+    return hat_a
 
 
 def first_differential(a: np.ndarray) -> np.ndarray:
@@ -120,6 +140,9 @@ def prepare_SIR_model(cases_per_day: np.ndarray = cases_per_day_uk,
     I = cases_per_day / total_population
     D = deaths_per_day / total_population
     R = D + recovery_per_day / total_population
+
+    I = moving_central_filter(I)
+    R = moving_central_filter(R)
     S = 1.0 - I - R
 
     dI = first_differential(I)
@@ -426,7 +449,8 @@ def run_SIR_model(step_number: int, time_step: int = 1.0,
                   offset: int = 0,
                   vital_dynamics: bool = True) -> np.ndarray:
 
-    cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population = input_arrays(country, offset)
+    cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population = input_arrays(
+        country, offset)
 
     Id, Rd, Sd, gamma_sc, lambda_sc, mu_sc = prepare_SIR_model(
         cases_per_day, deaths_per_day, recovery_per_day, total_population,
@@ -452,14 +476,14 @@ def run_SIR_model(step_number: int, time_step: int = 1.0,
 
 
 def plot_results(Im: np.ndarray, Rm: np.ndarray, Id: np.ndarray, Rd: np.ndarray, country: str = 'uk'):
-    
+
     _, _, _, _, total_population = input_arrays(country, 0)
 
     nm = len(Im)
     nd = len(Id)
-    
+
     days_d = input_days(nd, country)
-    
+
     end_date = np.datetime64(days_d[0]) + np.timedelta64(nm, 'D')
     days_m = np.arange(days_d[0], end_date, dtype='datetime64[D]')
 
@@ -476,8 +500,8 @@ def plot_results(Im: np.ndarray, Rm: np.ndarray, Id: np.ndarray, Rd: np.ndarray,
     plt.ylabel('Total Infected')
     plt.title('SIR model with Vital Dynamics (UK)')
     plt.grid()
-    plt.xticks([0, int(np.round(nm/4)), int(np.round(nm/2)), int(np.round(3*nm/4)), nm-1], 
-               [days_m[0], days_m[int(np.round(nm/4))], days_m[int(np.round(nm/2))], 
+    plt.xticks([0, int(np.round(nm/4)), int(np.round(nm/2)), int(np.round(3*nm/4)), nm-1],
+               [days_m[0], days_m[int(np.round(nm/4))], days_m[int(np.round(nm/2))],
                 days_m[int(np.round(3*nm/4))], days_m[nm-1]])
     fig.savefig(f'fig1.png')
 
@@ -492,15 +516,16 @@ def plot_results(Im: np.ndarray, Rm: np.ndarray, Id: np.ndarray, Rd: np.ndarray,
     plt.title('SIR model with Vital Dynamics (UK)')
     plt.grid()
     # UK
-    plt.xticks([0, int(np.round(nm/4)), int(np.round(nm/2)), int(np.round(3*nm/4)), nm-1], 
-               [days_m[0], days_m[int(np.round(nm/4))], days_m[int(np.round(nm/2))], 
+    plt.xticks([0, int(np.round(nm/4)), int(np.round(nm/2)), int(np.round(3*nm/4)), nm-1],
+               [days_m[0], days_m[int(np.round(nm/4))], days_m[int(np.round(nm/2))],
                 days_m[int(np.round(3*nm/4))], days_m[nm-1]])
     fig.savefig(f'fig2.png')
 
     return
 
+
 def input_arrays(country: str = 'uk', offset: int = 0):
-    
+
     if country == 'uk':
         cases_per_day = cases_per_day_uk[offset:]
         deaths_per_day = deaths_per_day_uk[offset:]
@@ -514,13 +539,14 @@ def input_arrays(country: str = 'uk', offset: int = 0):
     else:
         print(f"Data for this country not stored. Abort")
         return
-    
+
     total_cases_per_day = cases_per_day + deaths_per_day + recovery_per_day
-    
+
     return cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population
 
+
 def input_days(length: int, country: str = 'uk'):
-    
+
     if country == 'uk':
         days = days_uk
     elif country == 'it':
@@ -528,58 +554,180 @@ def input_days(length: int, country: str = 'uk'):
     else:
         print(f"Data for this country not stored. Abort")
         return
-    
+
     n_days = len(days)
     m = n_days - length
     days = days[m:]
-    
+
     return days
 
 
-def gaus(x,a,x0,sigma):
+def gaus(x, a, x0, sigma):
     return a*np.exp(-(x-x0)**2/(2*sigma**2))
+
+
+def linear(x, a, b):
+    return a*x + b
+
 
 def covid19_gauss(country: str = 'uk', offset: int = 0):
 
-    cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population = input_arrays(country, offset)
-    
-    n = len(cases_per_day) 
-    x = np.linspace(0,n-1,n)
+    cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population = input_arrays(
+        country, offset)
+
+    n = len(cases_per_day)
+    x = np.linspace(0, n-1, n)
     m = n+15
-    x2 = np.linspace(0,m-1,m)
-    
-    fit_gauss_with_figure(cases_per_day, x, x2, 'New Cases per Day', 'new cases', country)
-    
-    fit_gauss_with_figure(deaths_per_day, x, x2, 'Deaths per Day', 'deaths', country)
-    
-    fit_gauss_with_figure(recovery_per_day, x, x2, 'Recovery per Day', 'recovered', country)
-    
-    fit_gauss_with_figure(total_cases_per_day, x, x2, 'Total Cases per Day', 'total', country)
-    
+    x2 = np.linspace(0, m-1, m)
+
+    fit_gauss_with_figure(cases_per_day, x, x2,
+                          'New Cases per Day', 'new cases', country)
+
+    fit_gauss_with_figure(deaths_per_day, x, x2,
+                          'Deaths per Day', 'deaths', country)
+
+    fit_gauss_with_figure(recovery_per_day, x, x2,
+                          'Recovery per Day', 'recovered', country)
+
+    fit_gauss_with_figure(total_cases_per_day, x, x2,
+                          'Total Cases per Day', 'total', country)
+
+
 def fit_gauss_with_figure(y: np.ndarray, x: np.ndarray, x2: np.ndarray, title_str: str, y_str: str, country: str):
-    
+
     nd = len(y)
     days_d = input_days(nd, country)
     n2 = len(x2)
     end_date = np.datetime64(days_d[0]) + np.timedelta64(n2, 'D')
     days2 = np.arange(days_d[0], end_date, dtype='datetime64[D]')
-        
-    mean = np.mean(y)                   
-    sigma = (np.var(y))**0.5  
-    
-    popt,pcov = curve_fit(gaus,x,y,p0=[1,mean,sigma])
 
-    plt.plot(x,y,'b+:',label='data')
-    plt.plot(x2,gaus(x2,*popt),'ro:',label='fit')
+    mean = np.mean(y)
+    sigma = (np.var(y))**0.5
+
+    popt, pcov = curve_fit(gaus, x, y, p0=[1, mean, sigma])
+
+    plt.semilogy(x, y, 'b+:', label='data')
+    plt.semilogy(x2, gaus(x2, *popt), 'ro:', label='fit')
     plt.legend()
-    plt.title(title_str)
+    plt.title(title_str+' in '+country)
     plt.xlabel('days')
     plt.ylabel(y_str)
-    plt.xticks([0, int(np.round(n2/4)), int(np.round(n2/2)), int(np.round(3*n2/4)), n2-1], 
-               [days2[0], days2[int(np.round(n2/4))], days2[int(np.round(n2/2))], 
+    plt.xticks([0, int(np.round(n2/4)), int(np.round(n2/2)), int(np.round(3*n2/4)), n2-1],
+               [days2[0], days2[int(np.round(n2/4))], days2[int(np.round(n2/2))],
                 days2[int(np.round(3*n2/4))], days2[n2-1]])
     plt.grid()
     plt.show()
-    
+
     return
 
+
+def correlations(country: str = 'uk', offset: int = 0):
+
+    cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population = input_arrays(
+        country, offset)
+
+    I, R, S, _, _, _ = prepare_SIR_model(
+        cases_per_day, deaths_per_day, recovery_per_day, total_population,
+        False)
+
+    I = moving_central_filter(I)
+    R = moving_central_filter(R)
+    S = 1.0 - I - R
+
+    dI = first_differential(I)
+    dR = first_differential(R)
+    dS = - dI - dR
+
+    handles = [mpl_patches.Rectangle(
+        (0, 0), 1, 1, fc="white", ec="white", lw=0, alpha=0)]
+
+    C = np.corrcoef(np.ma.masked_invalid(I*I), np.ma.masked_invalid(dI))
+    rho = C[0][1]
+
+    popt, pcov = curve_fit(linear, I*I, dI, p0=[1, 1])
+
+    fig = plt.figure()
+    plt.plot(I*I, dI, 'or')
+    plt.plot(I*I, linear(I*I, *popt))
+    plt.xlabel('I^2')
+    plt.ylabel('dI/dt [1/day]')
+    labels = []
+    labels.append(f"rho = {round(rho, 4)}")
+    plt.legend(handles, labels, loc='best', fontsize='medium',
+               fancybox=False, framealpha=0,
+               handlelength=0, handletextpad=0)
+    plt.title('dI/dt vs I^2')
+    fig.savefig(f'fig_1.png')
+
+    C = np.corrcoef(np.ma.masked_invalid(I*R), np.ma.masked_invalid(dI))
+    rho = C[0][1]
+
+    popt, pcov = curve_fit(linear, I*R, dI, p0=[1, 1])
+
+    fig = plt.figure()
+    plt.plot(I*R, dI, 'or')
+    plt.plot(I*R, linear(I*R, *popt))
+    plt.xlabel('IR')
+    plt.ylabel('dI/dt [1/day]')
+    labels = []
+    labels.append(f"rho = {round(rho, 4)}")
+    plt.legend(handles, labels, loc='best', fontsize='medium',
+               fancybox=False, framealpha=0,
+               handlelength=0, handletextpad=0)
+    plt.title('dI/dt vs IR')
+    fig.savefig(f'fig_2.png')
+
+    C = np.corrcoef(np.ma.masked_invalid(R*R), np.ma.masked_invalid(dI))
+    rho = C[0][1]
+
+    popt, pcov = curve_fit(linear, R*R, dI, p0=[1, 1])
+
+    fig = plt.figure()
+    plt.plot(R*R, dI, 'or')
+    plt.plot(R*R, linear(R*R, *popt))
+    plt.xlabel('R^2')
+    plt.ylabel('dI/dt [1/day]')
+    labels = []
+    labels.append(f"rho = {round(rho, 4)}")
+    plt.legend(handles, labels, loc='best', fontsize='medium',
+               fancybox=False, framealpha=0,
+               handlelength=0, handletextpad=0)
+    plt.title('dI/dt vs R^2')
+    fig.savefig(f'fig_3.png')
+
+    C = np.corrcoef(np.ma.masked_invalid(I), np.ma.masked_invalid(dI))
+    rho = C[0][1]
+
+    popt, pcov = curve_fit(linear, I, dI, p0=[1, 1])
+
+    fig = plt.figure()
+    plt.plot(I, dI, 'or')
+    plt.plot(I, linear(I, *popt))
+    plt.xlabel('I')
+    plt.ylabel('dI/dt [1/day]')
+    labels = []
+    labels.append(f"rho = {round(rho, 4)}")
+    plt.legend(handles, labels, loc='best', fontsize='medium',
+               fancybox=False, framealpha=0,
+               handlelength=0, handletextpad=0)
+    plt.title('dI/dt vs I')
+    fig.savefig(f'fig_4.png')
+
+    C = np.corrcoef(np.ma.masked_invalid(R), np.ma.masked_invalid(dI))
+    rho = C[0][1]
+
+    popt, pcov = curve_fit(linear, I, dI, p0=[1, 1])
+    fig = plt.figure()
+    plt.plot(R, dI, 'or')
+    plt.plot(R, linear(R, *popt))
+    plt.xlabel('R')
+    plt.ylabel('dI/dt [1/day]')
+    labels = []
+    labels.append(f"rho = {round(rho, 4)}")
+    plt.legend(handles, labels, loc='best', fontsize='medium',
+               fancybox=False, framealpha=0,
+               handlelength=0, handletextpad=0)
+    plt.title('dI/dt vs R')
+    fig.savefig(f'fig_5.png')
+
+    return
