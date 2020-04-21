@@ -9,27 +9,25 @@ import matplotlib.patches as mpl_patches
 # UK cases from '2020-02-27'
 N_uk = 65382556
 
-days_uk = np.arange('2020-02-27', '2020-04-20', dtype='datetime64[D]')
-valid_days_uk = days_uk[::7]
-valid_index_uk = np.linspace(0,7*(len(valid_days_uk)-1),len(valid_days_uk))
+days_uk = np.arange('2020-02-27', '2020-04-21', dtype='datetime64[D]')
 
 total_cases_per_day_uk = np.array([3, 4, 3, 13, 3, 12, 36, 29, 48, 45, 69, 43, 62,
                                    77, 130, 208, 342, 251, 152, 407, 676, 643, 714,
                                    1035, 665, 967, 1427, 1452, 2129, 2885, 2546,
                                    2433, 2619, 3009, 4324, 4244, 4450, 4735,
                                    5903, 3802, 3634, 5491, 4344, 8681, 5233, 5288,
-                                   4342, 5252, 4603, 4617, 5599, 5525, 5850])
+                                   4342, 5252, 4603, 4617, 5599, 5525, 5850, 4676])
 
 deaths_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 1, 2, 2, 1,
                               10, 14, 20, 16, 33, 40, 33, 56, 48, 54, 87, 43,
                               115, 181, 260, 209, 180, 381, 563, 569, 684, 708,
                               621, 439, 786, 938, 881, 980, 917, 737, 717, 778,
-                              761, 861, 847, 888, 596])
+                              761, 861, 847, 888, 596, 449])
 
 recovery_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0,
                                 0, 0, 2, 32, 13, 0, 0, 0, 28, 0, 42, 209, 0, 0,
                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0])
+                                0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 cases_per_day_uk = total_cases_per_day_uk - \
     deaths_per_day_uk - recovery_per_day_uk
@@ -37,9 +35,7 @@ cases_per_day_uk = total_cases_per_day_uk - \
 # IT cases from '2020-02-20'
 N_it = 60480000
 
-days_it = np.arange('2020-02-20', '2020-04-20', dtype='datetime64[D]')
-valid_days_it = days_it[::7]
-valid_index_it = np.linspace(0,7*(len(valid_days_it)-1),len(valid_days_it))
+days_it = np.arange('2020-02-20', '2020-04-21', dtype='datetime64[D]')
 
 total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 573, 335,
                                    466, 587, 769, 778, 1247, 1492, 1797, 979, 2313,
@@ -47,14 +43,14 @@ total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 57
                                    5986, 6557, 5560, 4789, 5249, 5210, 6203, 5909,
                                    5974, 5217, 4050, 4053, 4782, 4668, 4585, 4805,
                                    4316, 3599, 3039, 3836, 4204, 3951, 4694, 4092,
-                                   3153, 2972, 2667, 3786, 3493, 3491, 3047])
+                                   3153, 2972, 2667, 3786, 3493, 3491, 3047, 2256])
 
 deaths_per_day_it = np.array([0, 0, 0, 0, 4, 4, 0, 5, 4, 8, 12, 11, 27, 28, 41,
                               49, 36, 133, 97, 168, 196, 189, 250, 175, 368, 349,
                               345, 475, 427, 627, 793, 651, 601, 743, 683, 712,
                               919, 889, 756, 812, 837, 727, 760, 766, 681, 525,
                               636, 604, 542, 610, 570, 619, 431, 566, 602, 578,
-                              525, 575, 482, 433])
+                              525, 575, 482, 433, 454])
 
 recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 138, 109, 66, 33, 102, 280, 41, 213, 181, 527,
@@ -62,7 +58,7 @@ recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 894, 1036, 999, 589, 1434, 646, 1590, 1109,
                                 1118, 1431, 1480, 1238, 819, 1022, 1555,
                                 2099, 1979, 1985, 2079, 1677, 1224, 1695,
-                                962, 2072, 2563, 2200, 2128])
+                                962, 2072, 2563, 2200, 2128, 1822])
 
 cases_per_day_it = total_cases_per_day_it - \
     deaths_per_day_it - recovery_per_day_it
@@ -487,7 +483,7 @@ def plot_results(Im: np.ndarray, Rm: np.ndarray, Id: np.ndarray, Rd: np.ndarray,
     nm = len(Im)
     nd = len(Id)
 
-    days, index = input_days(nd, country)
+    days, index = days_for_ticks(nd, nm, country)
 
     xm = np.linspace(0, nm-1, nm)
     xd = np.linspace(0, nd-1, nd)
@@ -546,11 +542,9 @@ def input_arrays(country: str = 'uk', offset: int = 0):
 def input_days(length: int, country: str = 'uk'):
 
     if country == 'uk':
-        days = valid_days_uk
-        index = valid_index_uk
+        days = days_uk
     elif country == 'it':
-        days = valid_days_it
-        index = valid_index_it
+        days = days_it
     else:
         print(f"Data for this country not stored. Abort")
         return
@@ -559,7 +553,7 @@ def input_days(length: int, country: str = 'uk'):
     m = n_days - length
     days = days[m:]
 
-    return days, index
+    return days
 
 
 def gaus(x, a, x0, sigma):
@@ -596,8 +590,8 @@ def covid19_gauss(country: str = 'uk', offset: int = 0):
 def fit_gauss_with_figure(y: np.ndarray, x: np.ndarray, x2: np.ndarray, title_str: str, y_str: str, country: str):
 
     nd = len(y)
-    days, index = input_days(nd, country)
     n2 = len(x2)
+    days, index = days_for_ticks(nd, n2, country)
 
     mean = np.mean(y)
     sigma = (np.var(y))**0.5
@@ -727,3 +721,14 @@ def correlations(country: str = 'uk', offset: int = 0):
     fig.savefig(f'fig_5.png')
 
     return
+
+
+def days_for_ticks(nd: int, nm: int, country: str):
+
+    days_d = input_days(nd, country)
+    end_date = np.datetime64(days_d[0]) + np.timedelta64(nm, 'D')
+    days2 = np.arange(days_d[0], end_date, dtype='datetime64[D]')
+    days = days2[::7]
+    index = np.linspace(0, 7*(len(days)-1), len(days))
+
+    return days, index
