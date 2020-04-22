@@ -9,25 +9,26 @@ import matplotlib.patches as mpl_patches
 # UK cases from '2020-02-27'
 N_uk = 65382556
 
-days_uk = np.arange('2020-02-27', '2020-04-21', dtype='datetime64[D]')
+days_uk = np.arange('2020-02-27', '2020-04-22', dtype='datetime64[D]')
 
 total_cases_per_day_uk = np.array([3, 4, 3, 13, 3, 12, 36, 29, 48, 45, 69, 43, 62,
                                    77, 130, 208, 342, 251, 152, 407, 676, 643, 714,
                                    1035, 665, 967, 1427, 1452, 2129, 2885, 2546,
                                    2433, 2619, 3009, 4324, 4244, 4450, 4735,
                                    5903, 3802, 3634, 5491, 4344, 8681, 5233, 5288,
-                                   4342, 5252, 4603, 4617, 5599, 5525, 5850, 4676])
+                                   4342, 5252, 4603, 4617, 5599, 5525, 5850, 4676,
+                                   4301])
 
 deaths_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 1, 2, 2, 1,
                               10, 14, 20, 16, 33, 40, 33, 56, 48, 54, 87, 43,
                               115, 181, 260, 209, 180, 381, 563, 569, 684, 708,
                               621, 439, 786, 938, 881, 980, 917, 737, 717, 778,
-                              761, 861, 847, 888, 596, 449])
+                              761, 861, 847, 888, 596, 449, 828])
 
 recovery_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0,
                                 0, 0, 2, 32, 13, 0, 0, 0, 28, 0, 42, 209, 0, 0,
                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0])
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 cases_per_day_uk = total_cases_per_day_uk - \
     deaths_per_day_uk - recovery_per_day_uk
@@ -35,7 +36,7 @@ cases_per_day_uk = total_cases_per_day_uk - \
 # IT cases from '2020-02-20'
 N_it = 60480000
 
-days_it = np.arange('2020-02-20', '2020-04-21', dtype='datetime64[D]')
+days_it = np.arange('2020-02-20', '2020-04-22', dtype='datetime64[D]')
 
 total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 573, 335,
                                    466, 587, 769, 778, 1247, 1492, 1797, 979, 2313,
@@ -43,14 +44,15 @@ total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 57
                                    5986, 6557, 5560, 4789, 5249, 5210, 6203, 5909,
                                    5974, 5217, 4050, 4053, 4782, 4668, 4585, 4805,
                                    4316, 3599, 3039, 3836, 4204, 3951, 4694, 4092,
-                                   3153, 2972, 2667, 3786, 3493, 3491, 3047, 2256])
+                                   3153, 2972, 2667, 3786, 3493, 3491, 3047, 2256,
+                                   2729])
 
 deaths_per_day_it = np.array([0, 0, 0, 0, 4, 4, 0, 5, 4, 8, 12, 11, 27, 28, 41,
                               49, 36, 133, 97, 168, 196, 189, 250, 175, 368, 349,
                               345, 475, 427, 627, 793, 651, 601, 743, 683, 712,
                               919, 889, 756, 812, 837, 727, 760, 766, 681, 525,
                               636, 604, 542, 610, 570, 619, 431, 566, 602, 578,
-                              525, 575, 482, 433, 454])
+                              525, 575, 482, 433, 454, 534])
 
 recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 138, 109, 66, 33, 102, 280, 41, 213, 181, 527,
@@ -58,7 +60,7 @@ recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 894, 1036, 999, 589, 1434, 646, 1590, 1109,
                                 1118, 1431, 1480, 1238, 819, 1022, 1555,
                                 2099, 1979, 1985, 2079, 1677, 1224, 1695,
-                                962, 2072, 2563, 2200, 2128, 1822])
+                                962, 2072, 2563, 2200, 2128, 1822, 2723])
 
 cases_per_day_it = total_cases_per_day_it - \
     deaths_per_day_it - recovery_per_day_it
@@ -133,15 +135,10 @@ def prepare_SIR_model(cases_per_day: np.ndarray = cases_per_day_uk,
     total_cases, total_deaths, total_recovery = integrate_all(
         cases_per_day, deaths_per_day, recovery_per_day)
 
-    # is the cumulative?
     I = total_cases / total_population
     D = total_deaths / total_population
     R = D + total_recovery / total_population
-    # is the dayly rate?
-    I = cases_per_day / total_population
-    D = deaths_per_day / total_population
-    R = D + recovery_per_day / total_population
-
+    
     I = moving_central_filter(I)
     R = moving_central_filter(R)
     S = 1.0 - I - R
@@ -307,10 +304,10 @@ def parameters_without_vital_dynamics(S: np.ndarray, I: np.ndarray, R: np.ndarra
 
     mu_sc = 0.0
 
-    gamma_field = (dR + mu_sc * R) / I
+    gamma_field = dR / I
     gamma_sc = np.mean(gamma_field)
 
-    lambda_field = (dI + (gamma_sc + mu_sc) * I) / (S * I)
+    lambda_field = (dI + gamma_sc * I) / (S * I)
     lambda_sc = np.mean(lambda_field)
 
     print(f"Preconditioned lambda = {lambda_sc}[1/day]")
@@ -473,7 +470,7 @@ def run_SIR_model(step_number: int, time_step: int = 1.0,
         cases_per_day, deaths_per_day, recovery_per_day)
 
     # , total_cases, (total_deaths + total_recovery)
-    return I * total_population, R * total_population, cases_per_day, (deaths_per_day + recovery_per_day)
+    return I * total_population, R * total_population, total_cases, (total_deaths + total_recovery)
 
 
 def plot_results(Im: np.ndarray, Rm: np.ndarray, Id: np.ndarray, Rd: np.ndarray, country: str = 'uk'):
@@ -569,22 +566,25 @@ def covid19_gauss(country: str = 'uk', offset: int = 0):
     cases_per_day, deaths_per_day, recovery_per_day, total_cases_per_day, total_population = input_arrays(
         country, offset)
 
-    n = len(cases_per_day)
+    total_cases, total_deaths, total_recovery = integrate_all(
+        cases_per_day, deaths_per_day, recovery_per_day)
+
+    n = len(total_cases)
     x = np.linspace(0, n-1, n)
-    m = n+15
+    m = n+60
     x2 = np.linspace(0, m-1, m)
 
-    fit_gauss_with_figure(cases_per_day, x, x2,
-                          'New Cases per Day', 'new cases', country)
+    fit_gauss_with_figure(total_cases, x, x2,
+                          'New Cases', 'new cases', country)
 
-    fit_gauss_with_figure(deaths_per_day, x, x2,
-                          'Deaths per Day', 'deaths', country)
+    fit_gauss_with_figure(total_deaths, x, x2,
+                          'Deaths', 'deaths', country)
 
-    fit_gauss_with_figure(recovery_per_day, x, x2,
-                          'Recovery per Day', 'recovered', country)
+    fit_gauss_with_figure(total_recovery, x, x2,
+                          'Recovery', 'recovered', country)
 
-    fit_gauss_with_figure(total_cases_per_day, x, x2,
-                          'Total Cases per Day', 'total', country)
+    fit_gauss_with_figure(total_cases+total_deaths+total_recovery, x, x2,
+                          'Total Cases', 'total cases', country)
 
 
 def fit_gauss_with_figure(y: np.ndarray, x: np.ndarray, x2: np.ndarray, title_str: str, y_str: str, country: str):
@@ -596,7 +596,7 @@ def fit_gauss_with_figure(y: np.ndarray, x: np.ndarray, x2: np.ndarray, title_st
     mean = np.mean(y)
     sigma = (np.var(y))**0.5
 
-    popt, pcov = curve_fit(gaus, x, y, p0=[1, mean, sigma])
+    popt, pcov = curve_fit(gaus, x, y, p0=[np.max(y), mean, sigma])
 
     plt.semilogy(x, y, 'b+:', label='data')
     plt.semilogy(x2, gaus(x2, *popt), 'ro:', label='fit')
@@ -728,7 +728,8 @@ def days_for_ticks(nd: int, nm: int, country: str):
     days_d = input_days(nd, country)
     end_date = np.datetime64(days_d[0]) + np.timedelta64(nm, 'D')
     days2 = np.arange(days_d[0], end_date, dtype='datetime64[D]')
-    days = days2[::7]
-    index = np.linspace(0, 7*(len(days)-1), len(days))
+    gap = 14
+    days = days2[::gap]
+    index = np.linspace(0, gap*(len(days)-1), len(days))
 
     return days, index
