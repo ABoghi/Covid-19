@@ -9,7 +9,7 @@ import matplotlib.patches as mpl_patches
 # UK cases from '2020-02-27'
 N_uk = 65382556
 
-days_uk = np.arange('2020-02-27', '2020-04-22', dtype='datetime64[D]')
+days_uk = np.arange('2020-02-27', '2020-05-02', dtype='datetime64[D]')
 
 total_cases_per_day_uk = np.array([3, 4, 3, 13, 3, 12, 36, 29, 48, 45, 69, 43, 62,
                                    77, 130, 208, 342, 251, 152, 407, 676, 643, 714,
@@ -17,18 +17,21 @@ total_cases_per_day_uk = np.array([3, 4, 3, 13, 3, 12, 36, 29, 48, 45, 69, 43, 6
                                    2433, 2619, 3009, 4324, 4244, 4450, 4735,
                                    5903, 3802, 3634, 5491, 4344, 8681, 5233, 5288,
                                    4342, 5252, 4603, 4617, 5599, 5525, 5850, 4676,
-                                   4301])
+                                   4301, 4451, 4583, 5386, 4913, 4463, 4309, 3996,
+                                   4076, 6032, 6201])
 
 deaths_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 1, 2, 2, 1,
                               10, 14, 20, 16, 33, 40, 33, 56, 48, 54, 87, 43,
                               115, 181, 260, 209, 180, 381, 563, 569, 684, 708,
                               621, 439, 786, 938, 881, 980, 917, 737, 717, 778,
-                              761, 861, 847, 888, 596, 449, 828])
+                              761, 861, 847, 888, 596, 449, 828, 763, 638, 768,
+                              813, 413, 360, 586, 795, 674, 739])
 
 recovery_per_day_uk = np.array([0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0,
                                 0, 0, 2, 32, 13, 0, 0, 0, 28, 0, 42, 209, 0, 0,
                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0])
 
 cases_per_day_uk = total_cases_per_day_uk - \
     deaths_per_day_uk - recovery_per_day_uk
@@ -36,7 +39,7 @@ cases_per_day_uk = total_cases_per_day_uk - \
 # IT cases from '2020-02-20'
 N_it = 60480000
 
-days_it = np.arange('2020-02-20', '2020-04-22', dtype='datetime64[D]')
+days_it = np.arange('2020-02-20', '2020-05-02', dtype='datetime64[D]')
 
 total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 573, 335,
                                    466, 587, 769, 778, 1247, 1492, 1797, 979, 2313,
@@ -45,14 +48,16 @@ total_cases_per_day_it = np.array([1, 17, 58, 78, 72, 94, 147, 185, 234, 239, 57
                                    5974, 5217, 4050, 4053, 4782, 4668, 4585, 4805,
                                    4316, 3599, 3039, 3836, 4204, 3951, 4694, 4092,
                                    3153, 2972, 2667, 3786, 3493, 3491, 3047, 2256,
-                                   2729])
+                                   2729, 3370, 2646, 3021, 2357, 2324, 1739, 2091,
+                                   2086, 1872, 1965])
 
 deaths_per_day_it = np.array([0, 0, 0, 0, 4, 4, 0, 5, 4, 8, 12, 11, 27, 28, 41,
                               49, 36, 133, 97, 168, 196, 189, 250, 175, 368, 349,
                               345, 475, 427, 627, 793, 651, 601, 743, 683, 712,
                               919, 889, 756, 812, 837, 727, 760, 766, 681, 525,
                               636, 604, 542, 610, 570, 619, 431, 566, 602, 578,
-                              525, 575, 482, 433, 454, 534])
+                              525, 575, 482, 433, 454, 534, 437, 464, 420, 415,
+                              260, 333, 382, 323, 285, 269])
 
 recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 138, 109, 66, 33, 102, 280, 41, 213, 181, 527,
@@ -60,7 +65,9 @@ recovery_per_day_it = np.array([0, 1, 1, 0, -1, 1, 1, 42, 1, 4, 33, 66, 11, 116,
                                 894, 1036, 999, 589, 1434, 646, 1590, 1109,
                                 1118, 1431, 1480, 1238, 819, 1022, 1555,
                                 2099, 1979, 1985, 2079, 1677, 1224, 1695,
-                                962, 2072, 2563, 2200, 2128, 1822, 2723])
+                                962, 2072, 2563, 2200, 2128, 1822, 2723,
+                                2943, 3033, 2922, 2622, 1808, 1696, 2317, 2311,
+                                4693, 2304])
 
 cases_per_day_it = total_cases_per_day_it - \
     deaths_per_day_it - recovery_per_day_it
@@ -138,7 +145,7 @@ def prepare_SIR_model(cases_per_day: np.ndarray = cases_per_day_uk,
     I = total_cases / total_population
     D = total_deaths / total_population
     R = D + total_recovery / total_population
-    
+
     I = moving_central_filter(I)
     R = moving_central_filter(R)
     S = 1.0 - I - R
@@ -153,6 +160,15 @@ def prepare_SIR_model(cases_per_day: np.ndarray = cases_per_day_uk,
     else:
         gamma_sc, lambda_sc, mu_sc = parameters_without_vital_dynamics(
             S, I, R, dS, dI, dR)
+    # dIdt = lambda_sc * S * I - (gamma_sc + mu_sc) * I
+    # dRdt = gamma_sc * I - mu_sc * R
+    fig = plt.figure()
+    plt.plot(dI, 'o')
+    plt.plot(lambda_sc * S * I - (gamma_sc + mu_sc) * I, 'r')
+
+    fig = plt.figure()
+    plt.plot(dR, 'o')
+    plt.plot(gamma_sc * I - mu_sc * R, 'r')
 
     return I, R, S, gamma_sc, lambda_sc, mu_sc
 
